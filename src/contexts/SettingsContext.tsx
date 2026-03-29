@@ -50,6 +50,9 @@ const translations: Translations = {
     delete: "Delete", edit: "Edit", add_service: "Add Service", edit_service: "Edit Service",
     service_added: "Service added", service_updated: "Service updated", no_services: "No services yet",
     price: "Price", duration: "Duration", minutes: "min",
+    my_own_income: "My Own Income", team_commission: "Team Commission",
+    admin_share: "Admin Share (50%)", barber_name: "Barber", all_income: "All Income",
+    team_income_total: "Team Income", my_work: "My Work",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
@@ -96,6 +99,9 @@ const translations: Translations = {
     delete: "Eliminar", edit: "Editar", add_service: "Agregar Servicio", edit_service: "Editar Servicio",
     service_added: "Servicio agregado", service_updated: "Servicio actualizado", no_services: "Sin servicios aún",
     price: "Precio", duration: "Duración", minutes: "min",
+    my_own_income: "Mis Ingresos Propios", team_commission: "Comisión del Equipo",
+    admin_share: "Parte Admin (50%)", barber_name: "Barbero", all_income: "Todos los Ingresos",
+    team_income_total: "Ingresos del Equipo", my_work: "Mi Trabajo",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
@@ -142,6 +148,9 @@ const translations: Translations = {
     delete: "Supprimer", edit: "Modifier", add_service: "Ajouter Service", edit_service: "Modifier Service",
     service_added: "Service ajouté", service_updated: "Service mis à jour", no_services: "Aucun service",
     price: "Prix", duration: "Durée", minutes: "min",
+    my_own_income: "Mes Propres Revenus", team_commission: "Commission Équipe",
+    admin_share: "Part Admin (50%)", barber_name: "Barbier", all_income: "Tous les Revenus",
+    team_income_total: "Revenus Équipe", my_work: "Mon Travail",
   },
   pt: {
     dashboard: "Painel", clients: "Clientes", appointments: "Agendamentos",
@@ -188,6 +197,9 @@ const translations: Translations = {
     delete: "Excluir", edit: "Editar", add_service: "Adicionar Serviço", edit_service: "Editar Serviço",
     service_added: "Serviço adicionado", service_updated: "Serviço atualizado", no_services: "Sem serviços",
     price: "Preço", duration: "Duração", minutes: "min",
+    my_own_income: "Minha Receita Própria", team_commission: "Comissão da Equipe",
+    admin_share: "Parte Admin (50%)", barber_name: "Barbeiro", all_income: "Todas as Receitas",
+    team_income_total: "Receita da Equipe", my_work: "Meu Trabalho",
   },
 };
 
