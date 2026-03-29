@@ -43,6 +43,7 @@ export function AppSidebar() {
     { title: t("income"), url: "/income", icon: DollarSign },
     { title: t("expenses"), url: "/expenses", icon: CreditCard },
     { title: t("invoices"), url: "/invoices", icon: FileText },
+    { title: t("services"), url: "/services", icon: Scissors },
     { title: t("team"), url: "/team", icon: UserCog },
     { title: t("settings"), url: "/settings", icon: Settings },
   ];
