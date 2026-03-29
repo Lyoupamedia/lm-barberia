@@ -65,7 +65,7 @@ export default function LoginPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
               <Scissors className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold font-heading">BarberPro</h1>
+            <h1 className="text-xl font-bold font-heading">LM Barberia</h1>
           </div>
 
           <h2 className="text-2xl font-bold font-heading mb-1">
