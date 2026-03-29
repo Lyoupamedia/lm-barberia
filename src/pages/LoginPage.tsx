@@ -19,16 +19,11 @@ export default function LoginPage() {
   const [claimingAdmin, setClaimingAdmin] = useState(false);
   const { toast } = useToast();
 
-  // Check if any admin exists
+  // Check if any admin exists via edge function (bypasses RLS)
   useEffect(() => {
-    supabase
-      .from("user_roles")
-      .select("id")
-      .eq("role", "admin")
-      .limit(1)
-      .then(({ data }) => {
-        setHasAdmin(data && data.length > 0);
-      });
+    supabase.functions.invoke("check-admin-exists").then(({ data }) => {
+      setHasAdmin(data?.hasAdmin ?? true);
+    }).catch(() => setHasAdmin(true));
   }, []);
 
   if (loading) {
