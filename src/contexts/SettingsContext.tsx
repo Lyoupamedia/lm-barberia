@@ -99,6 +99,9 @@ const translations: Translations = {
     delete: "Eliminar", edit: "Editar", add_service: "Agregar Servicio", edit_service: "Editar Servicio",
     service_added: "Servicio agregado", service_updated: "Servicio actualizado", no_services: "Sin servicios aún",
     price: "Precio", duration: "Duración", minutes: "min",
+    my_own_income: "Mis Ingresos Propios", team_commission: "Comisión del Equipo",
+    admin_share: "Parte Admin (50%)", barber_name: "Barbero", all_income: "Todos los Ingresos",
+    team_income_total: "Ingresos del Equipo", my_work: "Mi Trabajo",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
