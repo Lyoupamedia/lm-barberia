@@ -197,6 +197,9 @@ const translations: Translations = {
     delete: "Excluir", edit: "Editar", add_service: "Adicionar Serviço", edit_service: "Editar Serviço",
     service_added: "Serviço adicionado", service_updated: "Serviço atualizado", no_services: "Sem serviços",
     price: "Preço", duration: "Duração", minutes: "min",
+    my_own_income: "Minha Receita Própria", team_commission: "Comissão da Equipe",
+    admin_share: "Parte Admin (50%)", barber_name: "Barbeiro", all_income: "Todas as Receitas",
+    team_income_total: "Receita da Equipe", my_work: "Meu Trabalho",
   },
 };
 
