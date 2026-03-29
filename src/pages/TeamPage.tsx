@@ -7,7 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Users, Calendar, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DollarSign, Users, Calendar, ShieldCheck, Plus, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -17,7 +21,9 @@ interface TeamMember {
   user_id: string;
   full_name: string;
   role: AppRole | null;
+  commission_rate: number;
   totalIncome: number;
+  totalCommission: number;
   clientCount: number;
   appointmentCount: number;
 }
@@ -27,10 +33,13 @@ export default function TeamPage() {
   const { toast } = useToast();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", commission_rate: "50" });
 
   const fetchTeam = async () => {
     const [profilesRes, rolesRes, incomeRes, clientsRes, appointmentsRes] = await Promise.all([
-      supabase.from("profiles").select("user_id, full_name"),
+      supabase.from("profiles").select("user_id, full_name, commission_rate"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("income").select("barber_id, amount"),
       supabase.from("clients").select("barber_id"),
@@ -41,14 +50,22 @@ export default function TeamPage() {
     (rolesRes.data || []).forEach((r) => rolesMap.set(r.user_id, r.role));
 
     const profiles = profilesRes.data || [];
-    const stats: TeamMember[] = profiles.map((p) => ({
-      user_id: p.user_id,
-      full_name: p.full_name || "Unknown",
-      role: rolesMap.get(p.user_id) || null,
-      totalIncome: (incomeRes.data || []).filter((i) => i.barber_id === p.user_id).reduce((s, i) => s + Number(i.amount), 0),
-      clientCount: (clientsRes.data || []).filter((c) => c.barber_id === p.user_id).length,
-      appointmentCount: (appointmentsRes.data || []).filter((a) => a.barber_id === p.user_id).length,
-    }));
+    const stats: TeamMember[] = profiles.map((p) => {
+      const totalIncome = (incomeRes.data || [])
+        .filter((i) => i.barber_id === p.user_id)
+        .reduce((s, i) => s + Number(i.amount), 0);
+      const rate = Number(p.commission_rate) || 0;
+      return {
+        user_id: p.user_id,
+        full_name: p.full_name || "Unknown",
+        role: rolesMap.get(p.user_id) || null,
+        commission_rate: rate,
+        totalIncome,
+        totalCommission: totalIncome * (rate / 100),
+        clientCount: (clientsRes.data || []).filter((c) => c.barber_id === p.user_id).length,
+        appointmentCount: (appointmentsRes.data || []).filter((a) => a.barber_id === p.user_id).length,
+      };
+    });
 
     stats.sort((a, b) => b.totalIncome - a.totalIncome);
     setMembers(stats);
@@ -79,6 +96,53 @@ export default function TeamPage() {
     }
   };
 
+  const handleCommissionChange = async (userId: string, rate: string) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ commission_rate: parseFloat(rate) || 0 } as any)
+        .eq("user_id", userId);
+      if (error) throw error;
+      toast({ title: "Commission rate updated" });
+      fetchTeam();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleCreateBarber = async () => {
+    if (!form.full_name || !form.email || !form.password) {
+      toast({ title: "Error", description: "All fields are required", variant: "destructive" });
+      return;
+    }
+    if (form.password.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("create-barber", {
+        body: {
+          email: form.email.trim(),
+          password: form.password,
+          full_name: form.full_name.trim(),
+          commission_rate: parseFloat(form.commission_rate) || 0,
+        },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Barber created successfully!" });
+      setDialogOpen(false);
+      setForm({ full_name: "", email: "", password: "", commission_rate: "50" });
+      fetchTeam();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const roleBadge = (role: AppRole | null) => {
     if (!role) return <Badge variant="outline" className="text-muted-foreground">No role</Badge>;
     if (role === "admin") return <Badge className="bg-primary/20 text-primary border-primary/30">Admin</Badge>;
@@ -90,9 +154,37 @@ export default function TeamPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="page-header">Team</h1>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Manage roles</span>
+          <div className="flex items-center gap-3">
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" />Add Barber</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle className="font-heading">Create Barber Account</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Full Name</Label>
+                    <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="John Doe" />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="barber@example.com" />
+                  </div>
+                  <div>
+                    <Label>Password</Label>
+                    <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" />
+                  </div>
+                  <div>
+                    <Label>Commission Rate (%)</Label>
+                    <Input type="number" min="0" max="100" value={form.commission_rate} onChange={(e) => setForm({ ...form, commission_rate: e.target.value })} />
+                    <p className="text-xs text-muted-foreground mt-1">Percentage of income the barber earns as commission</p>
+                  </div>
+                  <Button onClick={handleCreateBarber} className="w-full" disabled={creating}>
+                    {creating ? "Creating..." : "Create Barber"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -114,11 +206,16 @@ export default function TeamPage() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-2">
+                <div className="mt-4 grid grid-cols-2 gap-2">
                   <div className="text-center rounded-lg bg-muted p-2">
                     <DollarSign className="h-4 w-4 mx-auto text-primary mb-1" />
                     <p className="text-xs text-muted-foreground">Income</p>
-                    <p className="text-sm font-bold">${b.totalIncome}</p>
+                    <p className="text-sm font-bold">${b.totalIncome.toLocaleString()}</p>
+                  </div>
+                  <div className="text-center rounded-lg bg-muted p-2">
+                    <Percent className="h-4 w-4 mx-auto text-primary mb-1" />
+                    <p className="text-xs text-muted-foreground">Commission</p>
+                    <p className="text-sm font-bold">${b.totalCommission.toLocaleString()}</p>
                   </div>
                   <div className="text-center rounded-lg bg-muted p-2">
                     <Users className="h-4 w-4 mx-auto text-primary mb-1" />
@@ -136,32 +233,47 @@ export default function TeamPage() {
           ))}
         </div>
 
-        {/* Full table with role management */}
+        {/* Full table */}
         <div className="rounded-xl border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Member</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Commission %</TableHead>
                 <TableHead>Total Income</TableHead>
+                <TableHead>Commission Earned</TableHead>
                 <TableHead>Clients</TableHead>
-                <TableHead>Appointments</TableHead>
                 <TableHead className="w-40">Assign Role</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               ) : members.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
               ) : (
                 members.map((m) => (
                   <TableRow key={m.user_id}>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell>{roleBadge(m.role)}</TableCell>
+                    <TableCell>
+                      {m.role === "barber" ? (
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          className="h-8 w-20"
+                          defaultValue={m.commission_rate}
+                          onBlur={(e) => handleCommissionChange(m.user_id, e.target.value)}
+                        />
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>${m.totalIncome.toLocaleString()}</TableCell>
+                    <TableCell className="font-medium text-primary">${m.totalCommission.toLocaleString()}</TableCell>
                     <TableCell>{m.clientCount}</TableCell>
-                    <TableCell>{m.appointmentCount}</TableCell>
                     <TableCell>
                       <Select
                         value={m.role || "none"}
