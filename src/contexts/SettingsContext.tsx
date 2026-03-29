@@ -93,7 +93,9 @@ const translations: Translations = {
     admin: "Admin", user: "Usuario", select_service: "Seleccionar servicio",
     select_client: "Seleccionar cliente", select_barber: "Seleccionar barbero",
     optional: "opcional", creating: "Creando...", no_role: "Sin rol",
-    delete: "Eliminar", edit: "Editar",
+    delete: "Eliminar", edit: "Editar", add_service: "Agregar Servicio", edit_service: "Editar Servicio",
+    service_added: "Servicio agregado", service_updated: "Servicio actualizado", no_services: "Sin servicios aún",
+    price: "Precio", duration: "Duración", minutes: "min",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
