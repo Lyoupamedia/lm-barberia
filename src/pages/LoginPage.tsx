@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Scissors } from "lucide-react";
+import { Scissors, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function LoginPage() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -14,7 +15,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
+  const [claimingAdmin, setClaimingAdmin] = useState(false);
   const { toast } = useToast();
+
+  // Check if any admin exists
+  useEffect(() => {
+    supabase
+      .from("user_roles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .then(({ data }) => {
+        setHasAdmin(data && data.length > 0);
+      });
+  }, []);
 
   if (loading) {
     return (
@@ -42,6 +57,28 @@ export default function LoginPage() {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleClaimAdmin = async () => {
+    setClaimingAdmin(true);
+    try {
+      // First sign in
+      const { error: signInError } = await signIn(email, password);
+      if (signInError) throw signInError;
+
+      // Then claim admin
+      const { data, error } = await supabase.functions.invoke("claim-admin");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({ title: "Admin role claimed!", description: "You are now the admin. Redirecting..." });
+      // Reload to refresh auth context with new role
+      window.location.href = "/dashboard";
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setClaimingAdmin(false);
     }
   };
 
@@ -94,6 +131,27 @@ export default function LoginPage() {
               {submitting ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
           </form>
+
+          {/* First-time admin setup - only shows when no admin exists */}
+          {hasAdmin === false && !isSignUp && (
+            <div className="mt-4 p-4 rounded-lg border border-primary/30 bg-primary/5">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-sm font-heading">First-time Setup</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                No admin found. Sign in with your credentials above, then claim admin access.
+              </p>
+              <Button
+                onClick={handleClaimAdmin}
+                variant="outline"
+                className="w-full border-primary/30 text-primary hover:bg-primary/10"
+                disabled={claimingAdmin || !email || !password}
+              >
+                {claimingAdmin ? "Claiming..." : "Sign In & Claim Admin"}
+              </Button>
+            </div>
+          )}
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
