@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -18,6 +18,7 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [form, setForm] = useState({ description: "", amount: "", category: "", expense_date: new Date().toISOString().split("T")[0] });
 
   const fetchExpenses = async () => {
@@ -28,17 +29,46 @@ export default function ExpensesPage() {
 
   useEffect(() => { fetchExpenses(); }, []);
 
+  const openNew = () => {
+    setEditingExpense(null);
+    setForm({ description: "", amount: "", category: "", expense_date: new Date().toISOString().split("T")[0] });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (e: Expense) => {
+    setEditingExpense(e);
+    setForm({
+      description: e.description,
+      amount: String(e.amount),
+      category: e.category || "",
+      expense_date: e.expense_date,
+    });
+    setDialogOpen(true);
+  };
+
   const handleSave = async () => {
     try {
-      const { error } = await supabase.from("expenses").insert({
-        description: form.description,
-        amount: parseFloat(form.amount),
-        category: form.category,
-        expense_date: form.expense_date,
-      });
-      if (error) throw error;
-      toast({ title: "Expense added" });
+      if (editingExpense) {
+        const { error } = await supabase.from("expenses").update({
+          description: form.description,
+          amount: parseFloat(form.amount),
+          category: form.category || null,
+          expense_date: form.expense_date,
+        }).eq("id", editingExpense.id);
+        if (error) throw error;
+        toast({ title: "Expense updated" });
+      } else {
+        const { error } = await supabase.from("expenses").insert({
+          description: form.description,
+          amount: parseFloat(form.amount),
+          category: form.category || null,
+          expense_date: form.expense_date,
+        });
+        if (error) throw error;
+        toast({ title: "Expense added" });
+      }
       setDialogOpen(false);
+      setEditingExpense(null);
       setForm({ description: "", amount: "", category: "", expense_date: new Date().toISOString().split("T")[0] });
       fetchExpenses();
     } catch (err: any) {
@@ -60,15 +90,15 @@ export default function ExpensesPage() {
         <div className="flex items-center justify-between">
           <h1 className="page-header">Expenses</h1>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Add Expense</Button></DialogTrigger>
+            <DialogTrigger asChild><Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Add Expense</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle className="font-heading">Add Expense</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="font-heading">{editingExpense ? "Edit Expense" : "Add Expense"}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div><Label>Description</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required /></div>
                 <div><Label>Amount ($)</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required /></div>
                 <div><Label>Category</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g. Supplies, Rent" /></div>
                 <div><Label>Date</Label><Input type="date" value={form.expense_date} onChange={(e) => setForm({ ...form, expense_date: e.target.value })} /></div>
-                <Button onClick={handleSave} className="w-full">Add Expense</Button>
+                <Button onClick={handleSave} className="w-full">{editingExpense ? "Update" : "Add"} Expense</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -87,7 +117,7 @@ export default function ExpensesPage() {
                 <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead className="w-16"></TableHead>
+                <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -103,7 +133,10 @@ export default function ExpensesPage() {
                     <TableCell>{e.category || "—"}</TableCell>
                     <TableCell>${Number(e.amount).toFixed(2)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(e)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
