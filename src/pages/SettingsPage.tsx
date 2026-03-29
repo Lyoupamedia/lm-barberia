@@ -46,12 +46,10 @@ const currencies = [
   { value: "USD", symbol: "$", label: "USD ($)" },
   { value: "EUR", symbol: "€", label: "EUR (€)" },
   { value: "GBP", symbol: "£", label: "GBP (£)" },
-  { value: "MAD", symbol: "د.م.", label: "MAD (د.م.)" },
-  { value: "DZD", symbol: "د.ج", label: "DZD (د.ج)" },
-  { value: "TND", symbol: "د.ت", label: "TND (د.ت)" },
   { value: "MXN", symbol: "$", label: "MXN ($)" },
   { value: "COP", symbol: "$", label: "COP ($)" },
   { value: "ARS", symbol: "$", label: "ARS ($)" },
+  { value: "BRL", symbol: "R$", label: "BRL (R$)" },
 ];
 
 const sectionLabels: Record<string, string> = {

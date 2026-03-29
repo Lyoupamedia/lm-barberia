@@ -205,7 +205,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = language;
   }, [language]);
 
