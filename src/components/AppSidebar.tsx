@@ -11,7 +11,6 @@ import {
   Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -35,8 +34,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { isAdmin, profile, signOut } = useAuth();
-  const { t, language } = useSettings();
-  const isRTL = language === "ar";
+  const { t } = useSettings();
 
   const adminItems = [
     { title: t("dashboard"), url: "/dashboard", icon: LayoutDashboard },
@@ -62,7 +60,7 @@ export function AppSidebar() {
   const items = isAdmin ? adminItems : barberItems;
 
   return (
-    <Sidebar collapsible="icon" side={isRTL ? "right" : "left"}>
+    <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
@@ -91,7 +89,7 @@ export function AppSidebar() {
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
-                      <item.icon className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                      <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -120,7 +118,7 @@ export function AppSidebar() {
           className="w-full text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
         >
           <Receipt className="h-4 w-4" />
-          {!collapsed && <span className={isRTL ? "mr-2" : "ml-2"}>{t("sign_out")}</span>}
+          {!collapsed && <span className="ml-2">{t("sign_out")}</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>
