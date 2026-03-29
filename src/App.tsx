@@ -15,6 +15,7 @@ import IncomePage from "./pages/IncomePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import TeamPage from "./pages/TeamPage";
+import ServicesPage from "./pages/ServicesPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
