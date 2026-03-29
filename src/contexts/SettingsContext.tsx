@@ -109,6 +109,13 @@ const translations: Translations = {
     my_own_income: "Mis Ingresos Propios", team_commission: "Comisión del Equipo",
     admin_share: "Parte Admin (50%)", barber_name: "Barbero", all_income: "Todos los Ingresos",
     team_income_total: "Ingresos del Equipo", my_work: "Mi Trabajo",
+    welcome_back: "Bienvenido de nuevo", create_account: "Crear cuenta",
+    sign_in: "Iniciar Sesión", sign_up: "Registrarse", sign_in_desc: "Inicia sesión en tu cuenta",
+    sign_up_desc: "Regístrate para comenzar", account_created: "¡Cuenta creada!",
+    check_email: "Revisa tu correo para confirmar.", already_have_account: "¿Ya tienes una cuenta?",
+    dont_have_account: "¿No tienes una cuenta?", salon_description: "La plataforma completa de gestión de salón. Gestiona citas, clientes, ingresos y rendimiento del equipo en un solo lugar.",
+    phone_number: "Número de teléfono", street_city: "Calle, Ciudad", contact_email: "contacto@salon.com",
+    show_section: "Mostrar {section} en navegación",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
