@@ -50,6 +50,9 @@ const translations: Translations = {
     delete: "Delete", edit: "Edit", add_service: "Add Service", edit_service: "Edit Service",
     service_added: "Service added", service_updated: "Service updated", no_services: "No services yet",
     price: "Price", duration: "Duration", minutes: "min",
+    my_own_income: "My Own Income", team_commission: "Team Commission",
+    admin_share: "Admin Share (50%)", barber_name: "Barber", all_income: "All Income",
+    team_income_total: "Team Income", my_work: "My Work",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
