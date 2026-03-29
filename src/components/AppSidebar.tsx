@@ -36,6 +36,7 @@ const adminItems = [
   { title: "Expenses", url: "/expenses", icon: CreditCard },
   { title: "Invoices", url: "/invoices", icon: FileText },
   { title: "Team", url: "/team", icon: UserCog },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 const barberItems = [
