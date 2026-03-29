@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, DollarSign } from "lucide-react";
+import { Plus, DollarSign, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -21,6 +21,7 @@ export default function IncomePage() {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [services, setServices] = useState<{ id: string; name: string; price: number }[]>([]);
+  const [commissionRate, setCommissionRate] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ client_id: "", service_id: "", amount: "", description: "", income_date: new Date().toISOString().split("T")[0] });
@@ -31,6 +32,17 @@ export default function IncomePage() {
       supabase.from("clients").select("id, name"),
       supabase.from("services").select("id, name, price"),
     ]);
+
+    // Fetch commission rate for current user
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("commission_rate")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (profile) setCommissionRate(Number(profile.commission_rate) || 0);
+    }
+
     setIncomes(incRes.data || []);
     setClients(clientRes.data || []);
     setServices(serviceRes.data || []);
@@ -67,6 +79,7 @@ export default function IncomePage() {
 
   const today = incomes.filter((i) => i.income_date === new Date().toISOString().split("T")[0]).reduce((s, i) => s + Number(i.amount), 0);
   const total = incomes.reduce((s, i) => s + Number(i.amount), 0);
+  const totalCommission = total * (commissionRate / 100);
 
   return (
     <DashboardLayout>
@@ -95,15 +108,23 @@ export default function IncomePage() {
                 <div><Label>Amount ($)</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required /></div>
                 <div><Label>Date</Label><Input type="date" value={form.income_date} onChange={(e) => setForm({ ...form, income_date: e.target.value })} /></div>
                 <div><Label>Description</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                {commissionRate > 0 && form.amount && (
+                  <div className="rounded-lg bg-muted p-3 text-sm">
+                    <p className="text-muted-foreground">Your commission ({commissionRate}%): <span className="font-bold text-primary">${(parseFloat(form.amount) * commissionRate / 100).toFixed(2)}</span></p>
+                  </div>
+                )}
                 <Button onClick={handleSave} className="w-full">Save Income</Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Today</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold font-heading">${today.toLocaleString()}</p></CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold font-heading">${total.toLocaleString()}</p></CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total Income</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold font-heading">${total.toLocaleString()}</p></CardContent></Card>
+          {commissionRate > 0 && (
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-1"><Percent className="h-3.5 w-3.5" />My Commission ({commissionRate}%)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold font-heading text-primary">${totalCommission.toLocaleString()}</p></CardContent></Card>
+          )}
         </div>
 
         <div className="rounded-xl border bg-card">
@@ -114,13 +135,14 @@ export default function IncomePage() {
                 <TableHead>Service</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Amount</TableHead>
+                {commissionRate > 0 && <TableHead>Commission</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               ) : incomes.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No income recorded yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No income recorded yet</TableCell></TableRow>
               ) : (
                 incomes.map((i) => (
                   <TableRow key={i.id}>
@@ -128,6 +150,9 @@ export default function IncomePage() {
                     <TableCell>{i.services?.name || i.description || "—"}</TableCell>
                     <TableCell>{i.clients?.name || "—"}</TableCell>
                     <TableCell className="font-medium">${Number(i.amount).toFixed(2)}</TableCell>
+                    {commissionRate > 0 && (
+                      <TableCell className="font-medium text-primary">${(Number(i.amount) * commissionRate / 100).toFixed(2)}</TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
