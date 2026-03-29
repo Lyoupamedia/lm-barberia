@@ -276,18 +276,21 @@ export type Database = {
       services: {
         Row: {
           created_at: string
+          duration_minutes: number
           id: string
           name: string
           price: number
         }
         Insert: {
           created_at?: string
+          duration_minutes?: number
           id?: string
           name: string
           price?: number
         }
         Update: {
           created_at?: string
+          duration_minutes?: number
           id?: string
           name?: string
           price?: number
