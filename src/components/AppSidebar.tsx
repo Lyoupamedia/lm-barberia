@@ -34,7 +34,8 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { isAdmin, profile, signOut } = useAuth();
-  const { t } = useSettings();
+  const { t, language } = useSettings();
+  const isRTL = language === "ar";
 
   const adminItems = [
     { title: t("dashboard"), url: "/dashboard", icon: LayoutDashboard },
