@@ -24,6 +24,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
+        <SettingsProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
