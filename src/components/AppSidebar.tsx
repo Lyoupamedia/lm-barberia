@@ -13,6 +13,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import {
   Sidebar,
   SidebarContent,
@@ -28,31 +29,32 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
-const adminItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Clients", url: "/clients", icon: Users },
-  { title: "Appointments", url: "/appointments", icon: Calendar },
-  { title: "Income", url: "/income", icon: DollarSign },
-  { title: "Expenses", url: "/expenses", icon: CreditCard },
-  { title: "Invoices", url: "/invoices", icon: FileText },
-  { title: "Team", url: "/team", icon: UserCog },
-  { title: "Settings", url: "/settings", icon: Settings },
-];
-
-const barberItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "My Clients", url: "/clients", icon: Users },
-  { title: "My Appointments", url: "/appointments", icon: Calendar },
-  { title: "My Income", url: "/income", icon: DollarSign },
-  { title: "Invoices", url: "/invoices", icon: FileText },
-  { title: "Settings", url: "/settings", icon: Settings },
-];
-
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { isAdmin, profile, signOut } = useAuth();
+  const { t } = useSettings();
+
+  const adminItems = [
+    { title: t("dashboard"), url: "/dashboard", icon: LayoutDashboard },
+    { title: t("clients"), url: "/clients", icon: Users },
+    { title: t("appointments"), url: "/appointments", icon: Calendar },
+    { title: t("income"), url: "/income", icon: DollarSign },
+    { title: t("expenses"), url: "/expenses", icon: CreditCard },
+    { title: t("invoices"), url: "/invoices", icon: FileText },
+    { title: t("team"), url: "/team", icon: UserCog },
+    { title: t("settings"), url: "/settings", icon: Settings },
+  ];
+
+  const barberItems = [
+    { title: t("dashboard"), url: "/dashboard", icon: LayoutDashboard },
+    { title: t("my_clients"), url: "/clients", icon: Users },
+    { title: t("my_appointments"), url: "/appointments", icon: Calendar },
+    { title: t("my_income"), url: "/income", icon: DollarSign },
+    { title: t("invoices"), url: "/invoices", icon: FileText },
+    { title: t("settings"), url: "/settings", icon: Settings },
+  ];
 
   const items = isAdmin ? adminItems : barberItems;
 
@@ -66,7 +68,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div>
               <h2 className="text-sm font-bold text-sidebar-accent-foreground font-heading">LM Barberia</h2>
-              <p className="text-xs text-sidebar-foreground">Salon Manager</p>
+              <p className="text-xs text-sidebar-foreground">{t("salon_manager")}</p>
             </div>
           )}
         </div>
@@ -74,11 +76,11 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("menu")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -104,7 +106,7 @@ export function AppSidebar() {
               {profile?.full_name || "User"}
             </p>
             <p className="text-xs text-sidebar-foreground capitalize">
-              {isAdmin ? "Admin" : "Barber"}
+              {isAdmin ? t("admin") : t("barber")}
             </p>
           </div>
         )}
@@ -115,7 +117,7 @@ export function AppSidebar() {
           className="w-full text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
         >
           <Receipt className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Sign Out</span>}
+          {!collapsed && <span className="ml-2">{t("sign_out")}</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>

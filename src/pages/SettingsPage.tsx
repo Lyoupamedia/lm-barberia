@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ const sectionLabels: Record<string, string> = {
 
 export default function SettingsPage() {
   const { user, profile, isAdmin } = useAuth();
+  const { t, refreshSettings } = useSettings();
   const { toast } = useToast();
   const [settings, setSettings] = useState<SettingsData>(defaultSettings);
   const [profileForm, setProfileForm] = useState({ full_name: "", phone: "" });
@@ -147,7 +149,8 @@ export default function SettingsPage() {
         if (error) throw error;
       }
 
-      toast({ title: "Settings saved" });
+      toast({ title: t("settings_saved") });
+      await refreshSettings();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
