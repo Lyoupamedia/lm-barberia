@@ -253,6 +253,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     loadSettings();
   }, [user]);
 
+  useEffect(() => {
+    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = language;
+  }, [language]);
+
   const t = (key: string): string => {
     return translations[language]?.[key] || translations["en"]?.[key] || key;
   };
