@@ -119,7 +119,7 @@ export function AppSidebar() {
           className="w-full text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
         >
           <Receipt className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">{t("sign_out")}</span>}
+          {!collapsed && <span className={isRTL ? "mr-2" : "ml-2"}>{t("sign_out")}</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>
