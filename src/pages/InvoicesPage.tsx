@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Pencil, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Tables } from "@/integrations/supabase/types";
@@ -17,6 +18,7 @@ type Invoice = Tables<"invoices"> & { clients?: { name: string } | null };
 
 export default function InvoicesPage() {
   const { user, isAdmin } = useAuth();
+  const { t, formatCurrency, currencySymbol } = useSettings();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
@@ -44,27 +46,12 @@ export default function InvoicesPage() {
     try {
       const selectedSvcs = services.filter((s) => form.selectedServices.includes(s.id));
       const total = selectedSvcs.reduce((s, svc) => s + svc.price, 0);
-
-      const { data: invoice, error } = await supabase.from("invoices").insert({
-        client_id: form.client_id,
-        barber_id: user.id,
-        total_amount: total,
-        status: "draft",
-      }).select().single();
+      const { data: invoice, error } = await supabase.from("invoices").insert({ client_id: form.client_id, barber_id: user.id, total_amount: total, status: "draft" }).select().single();
       if (error) throw error;
-
-      const items = selectedSvcs.map((svc) => ({
-        invoice_id: invoice.id,
-        service_id: svc.id,
-        description: svc.name,
-        quantity: 1,
-        unit_price: svc.price,
-        total: svc.price,
-      }));
+      const items = selectedSvcs.map((svc) => ({ invoice_id: invoice.id, service_id: svc.id, description: svc.name, quantity: 1, unit_price: svc.price, total: svc.price }));
       const { error: itemsError } = await supabase.from("invoice_items").insert(items);
       if (itemsError) throw itemsError;
-
-      toast({ title: "Invoice created" });
+      toast({ title: t("create_invoice") });
       setDialogOpen(false);
       setForm({ client_id: "", selectedServices: [] });
       fetchData();
@@ -81,11 +68,9 @@ export default function InvoicesPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      // Delete items first, then invoice
       await supabase.from("invoice_items").delete().eq("invoice_id", id);
       const { error } = await supabase.from("invoices").delete().eq("id", id);
       if (error) throw error;
-      toast({ title: "Invoice deleted" });
       fetchData();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -95,9 +80,7 @@ export default function InvoicesPage() {
   const toggleService = (id: string) => {
     setForm((prev) => ({
       ...prev,
-      selectedServices: prev.selectedServices.includes(id)
-        ? prev.selectedServices.filter((s) => s !== id)
-        : [...prev.selectedServices, id],
+      selectedServices: prev.selectedServices.includes(id) ? prev.selectedServices.filter((s) => s !== id) : [...prev.selectedServices, id],
     }));
   };
 
@@ -113,36 +96,36 @@ export default function InvoicesPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="page-header">Invoices</h1>
+          <h1 className="page-header">{t("invoices")}</h1>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Create Invoice</Button></DialogTrigger>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("create_invoice")}</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle className="font-heading">New Invoice</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="font-heading">{t("new_invoice")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Client</Label>
+                  <Label>{t("client")}</Label>
                   <Select value={form.client_id} onValueChange={(v) => setForm({ ...form, client_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("select_client")} /></SelectTrigger>
                     <SelectContent>{clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Services</Label>
+                  <Label>{t("services")}</Label>
                   <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
                     {services.map((s) => (
                       <label key={s.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent/50">
                         <Checkbox checked={form.selectedServices.includes(s.id)} onCheckedChange={() => toggleService(s.id)} />
                         <span className="flex-1 text-sm">{s.name}</span>
-                        <span className="text-sm font-medium">${s.price}</span>
+                        <span className="text-sm font-medium">{currencySymbol}{s.price}</span>
                       </label>
                     ))}
                   </div>
                 </div>
                 <div className="flex justify-between items-center py-2 border-t">
-                  <span className="font-medium">Total:</span>
-                  <span className="text-lg font-bold font-heading">${selectedTotal.toFixed(2)}</span>
+                  <span className="font-medium">{t("total")}:</span>
+                  <span className="text-lg font-bold font-heading">{formatCurrency(selectedTotal)}</span>
                 </div>
-                <Button onClick={handleCreate} className="w-full" disabled={!form.client_id || form.selectedServices.length === 0}>Create Invoice</Button>
+                <Button onClick={handleCreate} className="w-full" disabled={!form.client_id || form.selectedServices.length === 0}>{t("create_invoice")}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -152,29 +135,29 @@ export default function InvoicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Client</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-56">Actions</TableHead>
+                <TableHead>{t("client")}</TableHead>
+                <TableHead>{t("date")}</TableHead>
+                <TableHead>{t("total")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead className="w-56">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t("loading")}</TableCell></TableRow>
               ) : invoices.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No invoices yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t("no_invoices_yet")}</TableCell></TableRow>
               ) : (
                 invoices.map((inv) => (
                   <TableRow key={inv.id}>
                     <TableCell className="font-medium">{inv.clients?.name || "Unknown"}</TableCell>
                     <TableCell>{new Date(inv.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-medium">${Number(inv.total_amount).toFixed(2)}</TableCell>
+                    <TableCell className="font-medium">{formatCurrency(Number(inv.total_amount))}</TableCell>
                     <TableCell><Badge variant="outline" className={statusColor(inv.status)}>{inv.status}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        {inv.status === "draft" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "sent")}>Mark Sent</Button>}
-                        {inv.status === "sent" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "paid")}>Mark Paid</Button>}
+                        {inv.status === "draft" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "sent")}>{t("mark_sent")}</Button>}
+                        {inv.status === "sent" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "paid")}>{t("mark_paid")}</Button>}
                         {isAdmin && (
                           <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
                             <Trash2 className="h-4 w-4 text-destructive" />

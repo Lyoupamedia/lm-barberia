@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatCard } from "@/components/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { DollarSign, Users, Calendar, TrendingUp, CreditCard, Award, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,7 @@ interface RecentClient {
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
+  const { t, formatCurrency } = useSettings();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalIncome: 0, totalExpenses: 0, clientCount: 0, appointmentCount: 0, topBarber: "—", monthlyData: [],
@@ -119,41 +121,40 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="page-header">Dashboard</h1>
+        <h1 className="page-header">{t("dashboard")}</h1>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total Income" value={`$${stats.totalIncome.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} />
+          <StatCard title={t("total_income")} value={formatCurrency(stats.totalIncome)} icon={<DollarSign className="h-5 w-5" />} />
           {isAdmin && (
-            <StatCard title="Total Expenses" value={`$${stats.totalExpenses.toLocaleString()}`} icon={<CreditCard className="h-5 w-5" />} />
+            <StatCard title={t("total_expenses")} value={formatCurrency(stats.totalExpenses)} icon={<CreditCard className="h-5 w-5" />} />
           )}
-          <StatCard title="Profit" value={`$${(stats.totalIncome - stats.totalExpenses).toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} />
-          <StatCard title="Clients" value={stats.clientCount} icon={<Users className="h-5 w-5" />} />
-          <StatCard title="Appointments" value={stats.appointmentCount} icon={<Calendar className="h-5 w-5" />} />
+          <StatCard title={t("profit")} value={formatCurrency(stats.totalIncome - stats.totalExpenses)} icon={<TrendingUp className="h-5 w-5" />} />
+          <StatCard title={t("clients")} value={stats.clientCount} icon={<Users className="h-5 w-5" />} />
+          <StatCard title={t("appointments")} value={stats.appointmentCount} icon={<Calendar className="h-5 w-5" />} />
           {isAdmin && (
-            <StatCard title="Top Barber" value={stats.topBarber} icon={<Award className="h-5 w-5" />} />
+            <StatCard title={t("top_barber")} value={stats.topBarber} icon={<Award className="h-5 w-5" />} />
           )}
         </div>
 
-        {/* Recent Appointments & Clients */}
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-heading text-lg">Recent Appointments</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/appointments")}>View all</Button>
+              <CardTitle className="font-heading text-lg">{t("recent_appointments")}</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/appointments")}>{t("view_all")}</Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("client")}</TableHead>
+                    <TableHead>{t("date")}</TableHead>
+                    <TableHead>{t("status")}</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {recentAppointments.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No appointments yet</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">{t("no_appointments_yet")}</TableCell></TableRow>
                   ) : (
                     recentAppointments.map((a) => (
                       <TableRow key={a.id}>
@@ -175,21 +176,21 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-heading text-lg">Recent Clients</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>View all</Button>
+              <CardTitle className="font-heading text-lg">{t("recent_clients")}</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>{t("view_all")}</Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("phone")}</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {recentClients.length === 0 ? (
-                    <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No clients yet</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">{t("no_clients_yet")}</TableCell></TableRow>
                   ) : (
                     recentClients.map((c) => (
                       <TableRow key={c.id}>
@@ -211,7 +212,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-heading">Income Overview</CardTitle>
+            <CardTitle className="font-heading">{t("income_overview")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-72">

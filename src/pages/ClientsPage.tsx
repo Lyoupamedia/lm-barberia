@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ type Client = Tables<"clients">;
 
 export default function ClientsPage() {
   const { user } = useAuth();
+  const { t } = useSettings();
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,16 +39,11 @@ export default function ClientsPage() {
       if (editingClient) {
         const { error } = await supabase.from("clients").update({ name: form.name, phone: form.phone, notes: form.notes }).eq("id", editingClient.id);
         if (error) throw error;
-        toast({ title: "Client updated" });
       } else {
         const { error } = await supabase.from("clients").insert({ name: form.name, phone: form.phone, notes: form.notes, barber_id: user.id });
         if (error) throw error;
-        toast({ title: "Client added" });
       }
-      setDialogOpen(false);
-      setEditingClient(null);
-      setForm({ name: "", phone: "", notes: "" });
-      fetchClients();
+      setDialogOpen(false); setEditingClient(null); setForm({ name: "", phone: "", notes: "" }); fetchClients();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -55,39 +52,26 @@ export default function ClientsPage() {
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("clients").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Client deleted" }); fetchClients(); }
+    else fetchClients();
   };
 
-  const openEdit = (client: Client) => {
-    setEditingClient(client);
-    setForm({ name: client.name, phone: client.phone || "", notes: client.notes || "" });
-    setDialogOpen(true);
-  };
-
-  const openNew = () => {
-    setEditingClient(null);
-    setForm({ name: "", phone: "", notes: "" });
-    setDialogOpen(true);
-  };
+  const openEdit = (client: Client) => { setEditingClient(client); setForm({ name: client.name, phone: client.phone || "", notes: client.notes || "" }); setDialogOpen(true); };
+  const openNew = () => { setEditingClient(null); setForm({ name: "", phone: "", notes: "" }); setDialogOpen(true); };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="page-header">Clients</h1>
+          <h1 className="page-header">{t("clients")}</h1>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Add Client</Button>
-            </DialogTrigger>
+            <DialogTrigger asChild><Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />{t("add_client")}</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="font-heading">{editingClient ? "Edit Client" : "New Client"}</DialogTitle>
-              </DialogHeader>
+              <DialogHeader><DialogTitle className="font-heading">{editingClient ? t("edit_client") : t("new_client")}</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
-                <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-                <div><Label>Notes</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
-                <Button onClick={handleSave} className="w-full">{editingClient ? "Update" : "Add"} Client</Button>
+                <div><Label>{t("name")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
+                <div><Label>{t("phone")}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+                <div><Label>{t("notes")}</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+                <Button onClick={handleSave} className="w-full">{editingClient ? t("update") : t("save")} {t("client")}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -97,17 +81,17 @@ export default function ClientsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead className="w-24">Actions</TableHead>
+                <TableHead>{t("name")}</TableHead>
+                <TableHead>{t("phone")}</TableHead>
+                <TableHead>{t("notes")}</TableHead>
+                <TableHead className="w-24">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t("loading")}</TableCell></TableRow>
               ) : clients.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No clients yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t("no_clients_yet")}</TableCell></TableRow>
               ) : (
                 clients.map((c) => (
                   <TableRow key={c.id}>
