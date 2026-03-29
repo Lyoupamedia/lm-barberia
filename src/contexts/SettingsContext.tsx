@@ -53,6 +53,13 @@ const translations: Translations = {
     my_own_income: "My Own Income", team_commission: "Team Commission",
     admin_share: "Admin Share (50%)", barber_name: "Barber", all_income: "All Income",
     team_income_total: "Team Income", my_work: "My Work",
+    welcome_back: "Welcome back", create_account: "Create account",
+    sign_in: "Sign In", sign_up: "Sign Up", sign_in_desc: "Sign in to your account",
+    sign_up_desc: "Sign up to get started", account_created: "Account created!",
+    check_email: "Check your email to confirm.", already_have_account: "Already have an account?",
+    dont_have_account: "Don't have an account?", salon_description: "The complete salon management platform. Track appointments, clients, income, and team performance all in one place.",
+    phone_number: "Phone number", street_city: "Street, City", contact_email: "contact@salon.com",
+    show_section: "Show {section} in navigation",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
