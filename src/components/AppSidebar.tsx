@@ -8,6 +8,7 @@ import {
   UserCog,
   Scissors,
   CreditCard,
+  Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -35,6 +36,7 @@ const adminItems = [
   { title: "Expenses", url: "/expenses", icon: CreditCard },
   { title: "Invoices", url: "/invoices", icon: FileText },
   { title: "Team", url: "/team", icon: UserCog },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 const barberItems = [
@@ -43,6 +45,7 @@ const barberItems = [
   { title: "My Appointments", url: "/appointments", icon: Calendar },
   { title: "My Income", url: "/income", icon: DollarSign },
   { title: "Invoices", url: "/invoices", icon: FileText },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

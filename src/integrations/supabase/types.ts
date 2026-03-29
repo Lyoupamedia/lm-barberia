@@ -294,6 +294,51 @@ export type Database = {
         }
         Relationships: []
       }
+      settings: {
+        Row: {
+          business_address: string | null
+          business_email: string | null
+          business_name: string
+          business_phone: string | null
+          created_at: string
+          currency: string
+          currency_symbol: string
+          id: string
+          language: string
+          updated_at: string
+          user_id: string
+          visible_sections: Json
+        }
+        Insert: {
+          business_address?: string | null
+          business_email?: string | null
+          business_name?: string
+          business_phone?: string | null
+          created_at?: string
+          currency?: string
+          currency_symbol?: string
+          id?: string
+          language?: string
+          updated_at?: string
+          user_id: string
+          visible_sections?: Json
+        }
+        Update: {
+          business_address?: string | null
+          business_email?: string | null
+          business_name?: string
+          business_phone?: string | null
+          created_at?: string
+          currency?: string
+          currency_symbol?: string
+          id?: string
+          language?: string
+          updated_at?: string
+          user_id?: string
+          visible_sections?: Json
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
