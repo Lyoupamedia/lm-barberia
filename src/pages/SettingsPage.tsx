@@ -40,7 +40,7 @@ const languages = [
   { value: "en", label: "English" },
   { value: "es", label: "Español" },
   { value: "fr", label: "Français" },
-  { value: "pt", label: "Português" },
+  { value: "ar", label: "العربية" },
 ];
 
 const currencies = [
