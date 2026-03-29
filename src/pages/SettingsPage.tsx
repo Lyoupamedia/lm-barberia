@@ -40,29 +40,17 @@ const languages = [
   { value: "en", label: "English" },
   { value: "es", label: "Español" },
   { value: "fr", label: "Français" },
-  { value: "ar", label: "العربية" },
 ];
 
 const currencies = [
   { value: "USD", symbol: "$", label: "USD ($)" },
   { value: "EUR", symbol: "€", label: "EUR (€)" },
   { value: "GBP", symbol: "£", label: "GBP (£)" },
-  { value: "MAD", symbol: "د.م.", label: "MAD (د.م.)" },
-  { value: "DZD", symbol: "د.ج", label: "DZD (د.ج)" },
-  { value: "TND", symbol: "د.ت", label: "TND (د.ت)" },
   { value: "MXN", symbol: "$", label: "MXN ($)" },
   { value: "COP", symbol: "$", label: "COP ($)" },
   { value: "ARS", symbol: "$", label: "ARS ($)" },
+  { value: "BRL", symbol: "R$", label: "BRL (R$)" },
 ];
-
-const sectionLabels: Record<string, string> = {
-  income: "Income",
-  expenses: "Expenses",
-  clients: "Clients",
-  appointments: "Appointments",
-  invoices: "Invoices",
-  team: "Team",
-};
 
 export default function SettingsPage() {
   const { user, profile, isAdmin } = useAuth();
@@ -72,6 +60,8 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm] = useState({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const sectionKeys = ["income", "expenses", "clients", "appointments", "invoices", "team"];
 
   useEffect(() => {
     if (!user) return;
@@ -112,7 +102,7 @@ export default function SettingsPage() {
         .update({ full_name: profileForm.full_name.trim(), phone: profileForm.phone.trim() || null })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast({ title: "Profile updated" });
+      toast({ title: t("profile_updated") });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -190,7 +180,7 @@ export default function SettingsPage() {
       <div className="space-y-6 max-w-3xl">
         <div className="flex items-center gap-3">
           <Settings className="h-6 w-6 text-primary" />
-          <h1 className="page-header">Settings</h1>
+          <h1 className="page-header">{t("settings")}</h1>
         </div>
 
         {/* Profile Section */}
@@ -199,8 +189,8 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <User className="h-5 w-5 text-primary" />
               <div>
-                <CardTitle className="font-heading">My Profile</CardTitle>
-                <CardDescription>Manage your personal information</CardDescription>
+                <CardTitle className="font-heading">{t("my_profile")}</CardTitle>
+                <CardDescription>{t("manage_personal_info")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -213,23 +203,23 @@ export default function SettingsPage() {
               </Avatar>
               <div>
                 <p className="font-semibold font-heading">{profileForm.full_name || "User"}</p>
-                <p className="text-sm text-muted-foreground capitalize">{isAdmin ? "Admin" : "Barber"}</p>
+                <p className="text-sm text-muted-foreground capitalize">{isAdmin ? t("admin") : t("barber")}</p>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </div>
             <Separator />
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label>Full Name</Label>
+                <Label>{t("full_name")}</Label>
                 <Input value={profileForm.full_name} onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })} />
               </div>
               <div>
-                <Label>Phone</Label>
-                <Input value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder="Phone number" />
+                <Label>{t("phone")}</Label>
+                <Input value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder={t("phone_number")} />
               </div>
             </div>
             <Button onClick={handleSaveProfile} disabled={saving} size="sm">
-              <Save className="h-4 w-4 mr-2" />Save Profile
+              <Save className="h-4 w-4 mr-2" />{t("save_profile")}
             </Button>
           </CardContent>
         </Card>
@@ -241,28 +231,28 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <Building2 className="h-5 w-5 text-primary" />
                 <div>
-                  <CardTitle className="font-heading">Business Information</CardTitle>
-                  <CardDescription>Your salon details</CardDescription>
+                  <CardTitle className="font-heading">{t("business_information")}</CardTitle>
+                  <CardDescription>{t("your_salon_details")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label>Business Name</Label>
+                  <Label>{t("business_name")}</Label>
                   <Input value={settings.business_name} onChange={(e) => setSettings({ ...settings, business_name: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Business Phone</Label>
-                  <Input value={settings.business_phone} onChange={(e) => setSettings({ ...settings, business_phone: e.target.value })} placeholder="Business phone" />
+                  <Label>{t("business_phone")}</Label>
+                  <Input value={settings.business_phone} onChange={(e) => setSettings({ ...settings, business_phone: e.target.value })} placeholder={t("phone_number")} />
                 </div>
                 <div>
-                  <Label>Business Email</Label>
-                  <Input type="email" value={settings.business_email} onChange={(e) => setSettings({ ...settings, business_email: e.target.value })} placeholder="contact@salon.com" />
+                  <Label>{t("business_email")}</Label>
+                  <Input type="email" value={settings.business_email} onChange={(e) => setSettings({ ...settings, business_email: e.target.value })} placeholder={t("contact_email")} />
                 </div>
                 <div>
-                  <Label>Address</Label>
-                  <Input value={settings.business_address} onChange={(e) => setSettings({ ...settings, business_address: e.target.value })} placeholder="Street, City" />
+                  <Label>{t("address")}</Label>
+                  <Input value={settings.business_address} onChange={(e) => setSettings({ ...settings, business_address: e.target.value })} placeholder={t("street_city")} />
                 </div>
               </div>
             </CardContent>
@@ -275,15 +265,15 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Globe className="h-5 w-5 text-primary" />
               <div>
-                <CardTitle className="font-heading">Language & Currency</CardTitle>
-                <CardDescription>Regional preferences</CardDescription>
+                <CardTitle className="font-heading">{t("language_currency")}</CardTitle>
+                <CardDescription>{t("regional_preferences")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label>Language</Label>
+                <Label>{t("language")}</Label>
                 <Select value={settings.language} onValueChange={(v) => setSettings({ ...settings, language: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -294,7 +284,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
               <div>
-                <Label>Currency</Label>
+                <Label>{t("currency")}</Label>
                 <Select value={settings.currency} onValueChange={handleCurrencyChange}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -315,18 +305,18 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <LayoutDashboard className="h-5 w-5 text-primary" />
                 <div>
-                  <CardTitle className="font-heading">Dashboard Sections</CardTitle>
-                  <CardDescription>Toggle which sections are visible in the sidebar</CardDescription>
+                  <CardTitle className="font-heading">{t("dashboard_sections")}</CardTitle>
+                  <CardDescription>{t("toggle_sections")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(sectionLabels).map(([key, label]) => (
+                {sectionKeys.map((key) => (
                   <div key={key} className="flex items-center justify-between rounded-lg border p-3">
                     <div>
-                      <p className="text-sm font-medium">{label}</p>
-                      <p className="text-xs text-muted-foreground">Show {label.toLowerCase()} in navigation</p>
+                      <p className="text-sm font-medium">{t(key)}</p>
+                      <p className="text-xs text-muted-foreground">{t("show_section").replace("{section}", t(key).toLowerCase())}</p>
                     </div>
                     <Switch
                       checked={settings.visible_sections[key] ?? true}
@@ -342,7 +332,7 @@ export default function SettingsPage() {
         {/* Save Settings */}
         <div className="flex justify-end">
           <Button onClick={handleSaveSettings} disabled={saving} size="lg">
-            <Save className="h-4 w-4 mr-2" />{saving ? "Saving..." : "Save All Settings"}
+            <Save className="h-4 w-4 mr-2" />{saving ? t("saving") : t("save_all_settings")}
           </Button>
         </div>
       </div>
