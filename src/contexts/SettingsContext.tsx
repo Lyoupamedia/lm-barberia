@@ -165,6 +165,13 @@ const translations: Translations = {
     my_own_income: "Mes Propres Revenus", team_commission: "Commission Équipe",
     admin_share: "Part Admin (50%)", barber_name: "Barbier", all_income: "Tous les Revenus",
     team_income_total: "Revenus Équipe", my_work: "Mon Travail",
+    welcome_back: "Bon retour", create_account: "Créer un compte",
+    sign_in: "Se connecter", sign_up: "S'inscrire", sign_in_desc: "Connectez-vous à votre compte",
+    sign_up_desc: "Inscrivez-vous pour commencer", account_created: "Compte créé !",
+    check_email: "Vérifiez votre e-mail pour confirmer.", already_have_account: "Vous avez déjà un compte ?",
+    dont_have_account: "Vous n'avez pas de compte ?", salon_description: "La plateforme complète de gestion de salon. Suivez les rendez-vous, clients, revenus et performances de l'équipe en un seul endroit.",
+    phone_number: "Numéro de téléphone", street_city: "Rue, Ville", contact_email: "contact@salon.com",
+    show_section: "Afficher {section} dans la navigation",
   },
 };
 
