@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller }, error: authError } = await createClient(
-      supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!
+      supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!
     ).auth.getUser(token);
 
     if (authError || !caller) {
