@@ -149,7 +149,8 @@ export default function SettingsPage() {
         if (error) throw error;
       }
 
-      toast({ title: "Settings saved" });
+      toast({ title: t("settings_saved") });
+      await refreshSettings();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
