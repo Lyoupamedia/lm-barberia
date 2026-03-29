@@ -65,6 +65,7 @@ const sectionLabels: Record<string, string> = {
 
 export default function SettingsPage() {
   const { user, profile, isAdmin } = useAuth();
+  const { t, refreshSettings } = useSettings();
   const { toast } = useToast();
   const [settings, setSettings] = useState<SettingsData>(defaultSettings);
   const [profileForm, setProfileForm] = useState({ full_name: "", phone: "" });
