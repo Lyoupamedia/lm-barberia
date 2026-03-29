@@ -52,7 +52,7 @@ export default function LoginPage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-6">
           <Scissors className="h-8 w-8 text-primary-foreground" />
         </div>
-        <h1 className="text-3xl font-bold text-sidebar-accent-foreground font-heading mb-3">BarberPro</h1>
+        <h1 className="text-3xl font-bold text-sidebar-accent-foreground font-heading mb-3">LM Barberia</h1>
         <p className="text-sidebar-foreground text-center max-w-sm">
           The complete salon management platform. Track appointments, clients, income, and team performance all in one place.
         </p>
