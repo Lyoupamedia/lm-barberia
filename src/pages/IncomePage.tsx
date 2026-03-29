@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, DollarSign, Percent } from "lucide-react";
+import { Plus, Pencil, Trash2, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -24,6 +24,7 @@ export default function IncomePage() {
   const [commissionRate, setCommissionRate] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [form, setForm] = useState({ client_id: "", service_id: "", amount: "", description: "", income_date: new Date().toISOString().split("T")[0] });
 
   const fetchData = async () => {
@@ -33,7 +34,6 @@ export default function IncomePage() {
       supabase.from("services").select("id, name, price"),
     ]);
 
-    // Fetch commission rate for current user
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
@@ -56,21 +56,58 @@ export default function IncomePage() {
     setForm({ ...form, service_id: serviceId, amount: svc ? String(svc.price) : form.amount });
   };
 
+  const openNew = () => {
+    setEditingIncome(null);
+    setForm({ client_id: "", service_id: "", amount: "", description: "", income_date: new Date().toISOString().split("T")[0] });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (i: Income) => {
+    setEditingIncome(i);
+    setForm({
+      client_id: i.client_id || "",
+      service_id: i.service_id || "",
+      amount: String(i.amount),
+      description: i.description || "",
+      income_date: i.income_date,
+    });
+    setDialogOpen(true);
+  };
+
   const handleSave = async () => {
     if (!user) return;
     try {
-      const { error } = await supabase.from("income").insert({
-        barber_id: user.id,
+      const payload = {
         client_id: form.client_id || null,
         service_id: form.service_id || null,
         amount: parseFloat(form.amount),
         description: form.description,
         income_date: form.income_date,
-      });
-      if (error) throw error;
-      toast({ title: "Income recorded" });
+      };
+
+      if (editingIncome) {
+        const { error } = await supabase.from("income").update(payload).eq("id", editingIncome.id);
+        if (error) throw error;
+        toast({ title: "Income updated" });
+      } else {
+        const { error } = await supabase.from("income").insert({ ...payload, barber_id: user.id });
+        if (error) throw error;
+        toast({ title: "Income recorded" });
+      }
       setDialogOpen(false);
+      setEditingIncome(null);
       setForm({ client_id: "", service_id: "", amount: "", description: "", income_date: new Date().toISOString().split("T")[0] });
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("income").delete().eq("id", id);
+      if (error) throw error;
+      toast({ title: "Income deleted" });
       fetchData();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -87,9 +124,9 @@ export default function IncomePage() {
         <div className="flex items-center justify-between">
           <h1 className="page-header">Income</h1>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Record Income</Button></DialogTrigger>
+            <DialogTrigger asChild><Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Record Income</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle className="font-heading">Record Income</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="font-heading">{editingIncome ? "Edit Income" : "Record Income"}</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 <div>
                   <Label>Service</Label>
@@ -113,7 +150,7 @@ export default function IncomePage() {
                     <p className="text-muted-foreground">Your commission ({commissionRate}%): <span className="font-bold text-primary">${(parseFloat(form.amount) * commissionRate / 100).toFixed(2)}</span></p>
                   </div>
                 )}
-                <Button onClick={handleSave} className="w-full">Save Income</Button>
+                <Button onClick={handleSave} className="w-full">{editingIncome ? "Update" : "Save"} Income</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -136,13 +173,14 @@ export default function IncomePage() {
                 <TableHead>Client</TableHead>
                 <TableHead>Amount</TableHead>
                 {commissionRate > 0 && <TableHead>Commission</TableHead>}
+                <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               ) : incomes.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No income recorded yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No income recorded yet</TableCell></TableRow>
               ) : (
                 incomes.map((i) => (
                   <TableRow key={i.id}>
@@ -153,6 +191,12 @@ export default function IncomePage() {
                     {commissionRate > 0 && (
                       <TableCell className="font-medium text-primary">${(Number(i.amount) * commissionRate / 100).toFixed(2)}</TableCell>
                     )}
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(i)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(i.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

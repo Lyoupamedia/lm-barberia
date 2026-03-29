@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DollarSign, Users, Calendar, ShieldCheck, Plus, Percent } from "lucide-react";
+import { DollarSign, Users, Calendar, ShieldCheck, Plus, Percent, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -20,6 +20,7 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 interface TeamMember {
   user_id: string;
   full_name: string;
+  phone: string | null;
   role: AppRole | null;
   commission_rate: number;
   totalIncome: number;
@@ -33,13 +34,16 @@ export default function TeamPage() {
   const { toast } = useToast();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", commission_rate: "50" });
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [createForm, setCreateForm] = useState({ full_name: "", email: "", password: "", commission_rate: "50" });
+  const [editForm, setEditForm] = useState({ full_name: "", phone: "", commission_rate: "" });
 
   const fetchTeam = async () => {
     const [profilesRes, rolesRes, incomeRes, clientsRes, appointmentsRes] = await Promise.all([
-      supabase.from("profiles").select("user_id, full_name, commission_rate"),
+      supabase.from("profiles").select("user_id, full_name, phone, commission_rate"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("income").select("barber_id, amount"),
       supabase.from("clients").select("barber_id"),
@@ -58,6 +62,7 @@ export default function TeamPage() {
       return {
         user_id: p.user_id,
         full_name: p.full_name || "Unknown",
+        phone: p.phone,
         role: rolesMap.get(p.user_id) || null,
         commission_rate: rate,
         totalIncome,
@@ -96,50 +101,75 @@ export default function TeamPage() {
     }
   };
 
-  const handleCommissionChange = async (userId: string, rate: string) => {
+  const handleCreateBarber = async () => {
+    if (!createForm.full_name || !createForm.email || !createForm.password) {
+      toast({ title: "Error", description: "All fields are required", variant: "destructive" });
+      return;
+    }
+    if (createForm.password.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await supabase.functions.invoke("create-barber", {
+        body: {
+          email: createForm.email.trim(),
+          password: createForm.password,
+          full_name: createForm.full_name.trim(),
+          commission_rate: parseFloat(createForm.commission_rate) || 0,
+        },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Barber created successfully!" });
+      setCreateDialogOpen(false);
+      setCreateForm({ full_name: "", email: "", password: "", commission_rate: "50" });
+      fetchTeam();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const openEditProfile = (m: TeamMember) => {
+    setEditingMember(m);
+    setEditForm({ full_name: m.full_name, phone: m.phone || "", commission_rate: String(m.commission_rate) });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditProfile = async () => {
+    if (!editingMember) return;
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ commission_rate: parseFloat(rate) || 0 } as any)
-        .eq("user_id", userId);
+        .update({
+          full_name: editForm.full_name.trim(),
+          phone: editForm.phone.trim() || null,
+          commission_rate: parseFloat(editForm.commission_rate) || 0,
+        } as any)
+        .eq("user_id", editingMember.user_id);
       if (error) throw error;
-      toast({ title: "Commission rate updated" });
+      toast({ title: "Profile updated" });
+      setEditDialogOpen(false);
+      setEditingMember(null);
       fetchTeam();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
-  const handleCreateBarber = async () => {
-    if (!form.full_name || !form.email || !form.password) {
-      toast({ title: "Error", description: "All fields are required", variant: "destructive" });
-      return;
-    }
-    if (form.password.length < 6) {
-      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
-      return;
-    }
-    setCreating(true);
+  const handleDeleteMember = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await supabase.functions.invoke("create-barber", {
-        body: {
-          email: form.email.trim(),
-          password: form.password,
-          full_name: form.full_name.trim(),
-          commission_rate: parseFloat(form.commission_rate) || 0,
-        },
-      });
-      if (res.error) throw res.error;
-      if (res.data?.error) throw new Error(res.data.error);
-      toast({ title: "Barber created successfully!" });
-      setDialogOpen(false);
-      setForm({ full_name: "", email: "", password: "", commission_rate: "50" });
+      // Remove role and profile (user auth record stays but they can't access anything)
+      await supabase.from("user_roles").delete().eq("user_id", userId);
+      const { error } = await supabase.from("profiles").delete().eq("user_id", userId);
+      if (error) throw error;
+      toast({ title: "Member removed" });
       fetchTeam();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -154,39 +184,44 @@ export default function TeamPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="page-header">Team</h1>
-          <div className="flex items-center gap-3">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />Add Barber</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle className="font-heading">Create Barber Account</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Full Name</Label>
-                    <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="John Doe" />
-                  </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="barber@example.com" />
-                  </div>
-                  <div>
-                    <Label>Password</Label>
-                    <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 6 characters" />
-                  </div>
-                  <div>
-                    <Label>Commission Rate (%)</Label>
-                    <Input type="number" min="0" max="100" value={form.commission_rate} onChange={(e) => setForm({ ...form, commission_rate: e.target.value })} />
-                    <p className="text-xs text-muted-foreground mt-1">Percentage of income the barber earns as commission</p>
-                  </div>
-                  <Button onClick={handleCreateBarber} className="w-full" disabled={creating}>
-                    {creating ? "Creating..." : "Create Barber"}
-                  </Button>
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-2" />Add Barber</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle className="font-heading">Create Barber Account</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Full Name</Label><Input value={createForm.full_name} onChange={(e) => setCreateForm({ ...createForm, full_name: e.target.value })} placeholder="John Doe" /></div>
+                <div><Label>Email</Label><Input type="email" value={createForm.email} onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })} placeholder="barber@example.com" /></div>
+                <div><Label>Password</Label><Input type="password" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} placeholder="Min 6 characters" /></div>
+                <div>
+                  <Label>Commission Rate (%)</Label>
+                  <Input type="number" min="0" max="100" value={createForm.commission_rate} onChange={(e) => setCreateForm({ ...createForm, commission_rate: e.target.value })} />
+                  <p className="text-xs text-muted-foreground mt-1">Percentage of income the barber earns</p>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <Button onClick={handleCreateBarber} className="w-full" disabled={creating}>
+                  {creating ? "Creating..." : "Create Barber"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
+
+        {/* Edit Profile Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle className="font-heading">Edit Profile</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div><Label>Full Name</Label><Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} /></div>
+              <div><Label>Phone</Label><Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} placeholder="Phone number" /></div>
+              <div>
+                <Label>Commission Rate (%)</Label>
+                <Input type="number" min="0" max="100" value={editForm.commission_rate} onChange={(e) => setEditForm({ ...editForm, commission_rate: e.target.value })} />
+              </div>
+              <Button onClick={handleEditProfile} className="w-full">Update Profile</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Top performers cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -199,12 +234,15 @@ export default function TeamPage() {
                       {b.full_name.split(" ").map((n) => n[0]).join("").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold font-heading">{b.full_name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {i === 0 ? "🏆 Top Performer" : `#${i + 1} Performer`}
+                      {i === 0 ? "🏆 Top Performer" : `#${i + 1} Performer`} · {b.commission_rate}% commission
                     </p>
                   </div>
+                  <Button variant="ghost" size="icon" onClick={() => openEditProfile(b)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <div className="text-center rounded-lg bg-muted p-2">
@@ -244,33 +282,21 @@ export default function TeamPage() {
                 <TableHead>Total Income</TableHead>
                 <TableHead>Commission Earned</TableHead>
                 <TableHead>Clients</TableHead>
-                <TableHead className="w-40">Assign Role</TableHead>
+                <TableHead>Assign Role</TableHead>
+                <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               ) : members.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
               ) : (
                 members.map((m) => (
                   <TableRow key={m.user_id}>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell>{roleBadge(m.role)}</TableCell>
-                    <TableCell>
-                      {m.role === "barber" ? (
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          className="h-8 w-20"
-                          defaultValue={m.commission_rate}
-                          onBlur={(e) => handleCommissionChange(m.user_id, e.target.value)}
-                        />
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
+                    <TableCell>{m.role === "barber" ? `${m.commission_rate}%` : "—"}</TableCell>
                     <TableCell>${m.totalIncome.toLocaleString()}</TableCell>
                     <TableCell className="font-medium text-primary">${m.totalCommission.toLocaleString()}</TableCell>
                     <TableCell>{m.clientCount}</TableCell>
@@ -289,6 +315,18 @@ export default function TeamPage() {
                           <SelectItem value="barber">Barber</SelectItem>
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEditProfile(m)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        {m.user_id !== user?.id && (
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteMember(m.user_id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

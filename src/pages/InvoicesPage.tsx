@@ -8,10 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Invoice = Tables<"invoices"> & { clients?: { name: string } | null };
@@ -80,6 +79,19 @@ export default function InvoicesPage() {
     else fetchData();
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      // Delete items first, then invoice
+      await supabase.from("invoice_items").delete().eq("invoice_id", id);
+      const { error } = await supabase.from("invoices").delete().eq("id", id);
+      if (error) throw error;
+      toast({ title: "Invoice deleted" });
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const toggleService = (id: string) => {
     setForm((prev) => ({
       ...prev,
@@ -144,7 +156,7 @@ export default function InvoicesPage() {
                 <TableHead>Date</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-48">Actions</TableHead>
+                <TableHead className="w-56">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -163,6 +175,11 @@ export default function InvoicesPage() {
                       <div className="flex gap-1">
                         {inv.status === "draft" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "sent")}>Mark Sent</Button>}
                         {inv.status === "sent" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "paid")}>Mark Paid</Button>}
+                        {isAdmin && (
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
