@@ -185,7 +185,9 @@ const translations: Translations = {
     admin: "Admin", user: "Usuário", select_service: "Selecionar serviço",
     select_client: "Selecionar cliente", select_barber: "Selecionar barbeiro",
     optional: "opcional", creating: "Criando...", no_role: "Sem função",
-    delete: "Excluir", edit: "Editar",
+    delete: "Excluir", edit: "Editar", add_service: "Adicionar Serviço", edit_service: "Editar Serviço",
+    service_added: "Serviço adicionado", service_updated: "Serviço atualizado", no_services: "Sem serviços",
+    price: "Preço", duration: "Duração", minutes: "min",
   },
 };
 
