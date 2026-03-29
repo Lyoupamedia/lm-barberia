@@ -45,6 +45,7 @@ const barberItems = [
   { title: "My Appointments", url: "/appointments", icon: Calendar },
   { title: "My Income", url: "/income", icon: DollarSign },
   { title: "Invoices", url: "/invoices", icon: FileText },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
