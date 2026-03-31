@@ -45,6 +45,7 @@ export default function ExpensesPage() {
       } else {
         const { error } = await supabase.from("expenses").insert({ description: form.description, amount: parseFloat(form.amount), category: form.category || null, expense_date: form.expense_date });
         if (error) throw error;
+        if (user) await createNotification(user.id, profile?.full_name || "User", "created", t("expenses"), form.description);
       }
       setDialogOpen(false); setEditingExpense(null); fetchExpenses();
     } catch (err: any) {
