@@ -62,6 +62,9 @@ const translations: Translations = {
     show_section: "Show {section} in navigation",
     export_pdf: "Export PDF", invoice: "Invoice", qty: "Qty", unit_price: "Unit Price",
     thank_you: "Thank you for your business!",
+    notifications: "Notifications", no_notifications: "No notifications yet",
+    notif_created: "created", notif_updated: "updated", notif_deleted: "deleted",
+    you: "You", new: "new", just_now: "just now",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
