@@ -92,7 +92,7 @@ export async function exportInvoicePdf(
     formatCurrency(Number(item.total)),
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: tableY,
     head: [[labels.service, labels.qty, labels.unitPrice, labels.total]],
     body: tableData,
