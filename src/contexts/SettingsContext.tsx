@@ -176,6 +176,8 @@ const translations: Translations = {
     dont_have_account: "Vous n'avez pas de compte ?", salon_description: "La plateforme complète de gestion de salon. Suivez les rendez-vous, clients, revenus et performances de l'équipe en un seul endroit.",
     phone_number: "Numéro de téléphone", street_city: "Rue, Ville", contact_email: "contact@salon.com",
     show_section: "Afficher {section} dans la navigation",
+    export_pdf: "Exporter PDF", invoice: "Facture", qty: "Qté", unit_price: "Prix Unitaire",
+    thank_you: "Merci pour votre confiance !",
   },
 };
 
