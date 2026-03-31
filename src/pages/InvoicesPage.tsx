@@ -27,6 +27,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ client_id: "", selectedServices: [] as string[] });
+  const [businessInfo, setBusinessInfo] = useState({ businessName: "LM Barberia", businessPhone: "", businessEmail: "", businessAddress: "" });
 
   const fetchData = async () => {
     const [invRes, clientRes, serviceRes] = await Promise.all([
