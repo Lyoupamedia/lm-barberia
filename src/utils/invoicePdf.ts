@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 
 interface InvoiceData {
@@ -92,7 +92,7 @@ export async function exportInvoicePdf(
     formatCurrency(Number(item.total)),
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: tableY,
     head: [[labels.service, labels.qty, labels.unitPrice, labels.total]],
     body: tableData,
