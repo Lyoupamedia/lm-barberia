@@ -95,6 +95,16 @@ export default function InvoicesPage() {
     }));
   };
 
+  const handleExportPdf = async (inv: Invoice) => {
+    await exportInvoicePdf(
+      { id: inv.id, clientName: inv.clients?.name || "Unknown", createdAt: inv.created_at, totalAmount: Number(inv.total_amount), status: inv.status },
+      businessInfo,
+      { invoice: t("invoice"), client: t("client"), date: t("date"), status: t("status"), service: t("service"), qty: t("qty"), unitPrice: t("unit_price"), total: t("total"), thankYou: t("thank_you") },
+      formatCurrency
+    );
+    toast({ title: t("export_pdf") });
+  };
+
   const statusColor = (s: string) => {
     if (s === "paid") return "bg-success/15 text-success border-success/30";
     if (s === "sent") return "bg-info/15 text-info border-info/30";
