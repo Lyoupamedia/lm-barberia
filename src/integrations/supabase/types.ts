@@ -240,6 +240,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_type: string
+          actor_id: string
+          actor_name: string
+          created_at: string
+          entity_name: string
+          entity_type: string
+          id: string
+          read_by: Json
+        }
+        Insert: {
+          action_type: string
+          actor_id: string
+          actor_name?: string
+          created_at?: string
+          entity_name?: string
+          entity_type: string
+          id?: string
+          read_by?: Json
+        }
+        Update: {
+          action_type?: string
+          actor_id?: string
+          actor_name?: string
+          created_at?: string
+          entity_name?: string
+          entity_type?: string
+          id?: string
+          read_by?: Json
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
