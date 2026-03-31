@@ -18,6 +18,7 @@ type Expense = Tables<"expenses">;
 
 export default function ExpensesPage() {
   const { t, formatCurrency, currencySymbol } = useSettings();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
