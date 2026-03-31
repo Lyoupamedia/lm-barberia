@@ -123,6 +123,9 @@ const translations: Translations = {
     show_section: "Mostrar {section} en navegación",
     export_pdf: "Exportar PDF", invoice: "Factura", qty: "Cant", unit_price: "Precio Unitario",
     thank_you: "¡Gracias por su preferencia!",
+    notifications: "Notificaciones", no_notifications: "Sin notificaciones",
+    notif_created: "creó", notif_updated: "actualizó", notif_deleted: "eliminó",
+    you: "Tú", new: "nuevas", just_now: "ahora",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
