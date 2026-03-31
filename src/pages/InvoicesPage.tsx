@@ -13,6 +13,7 @@ import { Plus, Trash2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { exportInvoicePdf } from "@/utils/invoicePdf";
+import { createNotification } from "@/utils/notifications";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Invoice = Tables<"invoices"> & { clients?: { name: string } | null };
