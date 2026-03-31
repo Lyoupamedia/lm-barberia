@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { exportInvoicePdf } from "@/utils/invoicePdf";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Invoice = Tables<"invoices"> & { clients?: { name: string } | null };
@@ -26,16 +27,26 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ client_id: "", selectedServices: [] as string[] });
+  const [businessInfo, setBusinessInfo] = useState({ businessName: "LM Barberia", businessPhone: "", businessEmail: "", businessAddress: "" });
 
   const fetchData = async () => {
-    const [invRes, clientRes, serviceRes] = await Promise.all([
+    const [invRes, clientRes, serviceRes, settingsRes] = await Promise.all([
       supabase.from("invoices").select("*, clients(name)").order("created_at", { ascending: false }),
       supabase.from("clients").select("id, name"),
       supabase.from("services").select("id, name, price"),
+      user ? supabase.from("settings").select("business_name, business_phone, business_email, business_address").eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
     setInvoices(invRes.data || []);
     setClients(clientRes.data || []);
     setServices(serviceRes.data || []);
+    if (settingsRes.data) {
+      setBusinessInfo({
+        businessName: settingsRes.data.business_name || "LM Barberia",
+        businessPhone: settingsRes.data.business_phone || "",
+        businessEmail: settingsRes.data.business_email || "",
+        businessAddress: settingsRes.data.business_address || "",
+      });
+    }
     setLoading(false);
   };
 
@@ -82,6 +93,16 @@ export default function InvoicesPage() {
       ...prev,
       selectedServices: prev.selectedServices.includes(id) ? prev.selectedServices.filter((s) => s !== id) : [...prev.selectedServices, id],
     }));
+  };
+
+  const handleExportPdf = async (inv: Invoice) => {
+    await exportInvoicePdf(
+      { id: inv.id, clientName: inv.clients?.name || "Unknown", createdAt: inv.created_at, totalAmount: Number(inv.total_amount), status: inv.status },
+      businessInfo,
+      { invoice: t("invoice"), client: t("client"), date: t("date"), status: t("status"), service: t("service"), qty: t("qty"), unitPrice: t("unit_price"), total: t("total"), thankYou: t("thank_you") },
+      formatCurrency
+    );
+    toast({ title: t("export_pdf") });
   };
 
   const statusColor = (s: string) => {
@@ -158,6 +179,11 @@ export default function InvoicesPage() {
                       <div className="flex gap-1">
                         {inv.status === "draft" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "sent")}>{t("mark_sent")}</Button>}
                         {inv.status === "sent" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "paid")}>{t("mark_paid")}</Button>}
+                        {inv.status === "paid" && (
+                          <Button variant="outline" size="sm" onClick={() => handleExportPdf(inv)}>
+                            <Download className="h-4 w-4 mr-1" />{t("export_pdf")}
+                          </Button>
+                        )}
                         {isAdmin && (
                           <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
                             <Trash2 className="h-4 w-4 text-destructive" />

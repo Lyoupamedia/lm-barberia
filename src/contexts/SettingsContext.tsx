@@ -60,6 +60,8 @@ const translations: Translations = {
     dont_have_account: "Don't have an account?", salon_description: "The complete salon management platform. Track appointments, clients, income, and team performance all in one place.",
     phone_number: "Phone number", street_city: "Street, City", contact_email: "contact@salon.com",
     show_section: "Show {section} in navigation",
+    export_pdf: "Export PDF", invoice: "Invoice", qty: "Qty", unit_price: "Unit Price",
+    thank_you: "Thank you for your business!",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
@@ -116,6 +118,8 @@ const translations: Translations = {
     dont_have_account: "¿No tienes una cuenta?", salon_description: "La plataforma completa de gestión de salón. Gestiona citas, clientes, ingresos y rendimiento del equipo en un solo lugar.",
     phone_number: "Número de teléfono", street_city: "Calle, Ciudad", contact_email: "contacto@salon.com",
     show_section: "Mostrar {section} en navegación",
+    export_pdf: "Exportar PDF", invoice: "Factura", qty: "Cant", unit_price: "Precio Unitario",
+    thank_you: "¡Gracias por su preferencia!",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
@@ -172,6 +176,8 @@ const translations: Translations = {
     dont_have_account: "Vous n'avez pas de compte ?", salon_description: "La plateforme complète de gestion de salon. Suivez les rendez-vous, clients, revenus et performances de l'équipe en un seul endroit.",
     phone_number: "Numéro de téléphone", street_city: "Rue, Ville", contact_email: "contact@salon.com",
     show_section: "Afficher {section} dans la navigation",
+    export_pdf: "Exporter PDF", invoice: "Facture", qty: "Qté", unit_price: "Prix Unitaire",
+    thank_you: "Merci pour votre confiance !",
   },
 };
 
