@@ -43,6 +43,7 @@ export default function ClientsPage() {
       } else {
         const { error } = await supabase.from("clients").insert({ name: form.name, phone: form.phone, notes: form.notes, barber_id: user.id });
         if (error) throw error;
+        await createNotification(user.id, profile?.full_name || "User", "created", t("client"), form.name);
       }
       setDialogOpen(false); setEditingClient(null); setForm({ name: "", phone: "", notes: "" }); fetchClients();
     } catch (err: any) {
