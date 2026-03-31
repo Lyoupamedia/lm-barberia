@@ -82,6 +82,8 @@ export default function IncomePage() {
       } else {
         const { error } = await supabase.from("income").insert({ ...payload, barber_id: user.id });
         if (error) throw error;
+        const svcName = services.find(s => s.id === form.service_id)?.name || form.description;
+        await createNotification(user.id, profile?.full_name || "User", "created", t("income"), svcName);
         toast({ title: t("record_income") });
       }
       setDialogOpen(false);
