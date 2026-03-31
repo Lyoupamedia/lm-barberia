@@ -179,6 +179,11 @@ export default function InvoicesPage() {
                       <div className="flex gap-1">
                         {inv.status === "draft" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "sent")}>{t("mark_sent")}</Button>}
                         {inv.status === "sent" && <Button variant="outline" size="sm" onClick={() => updateStatus(inv.id, "paid")}>{t("mark_paid")}</Button>}
+                        {inv.status === "paid" && (
+                          <Button variant="outline" size="sm" onClick={() => handleExportPdf(inv)}>
+                            <Download className="h-4 w-4 mr-1" />{t("export_pdf")}
+                          </Button>
+                        )}
                         {isAdmin && (
                           <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
