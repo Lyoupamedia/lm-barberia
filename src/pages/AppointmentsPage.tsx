@@ -19,7 +19,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Appointment = Tables<"appointments"> & { clients?: { name: string } | null };
 
 export default function AppointmentsPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const { t } = useSettings();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
