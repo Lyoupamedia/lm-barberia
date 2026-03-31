@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { createNotification } from "@/utils/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +19,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Appointment = Tables<"appointments"> & { clients?: { name: string } | null };
 
 export default function AppointmentsPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const { t } = useSettings();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -61,6 +62,8 @@ export default function AppointmentsPage() {
       } else {
         const { error } = await supabase.from("appointments").insert({ client_id: form.client_id, barber_id: isAdmin ? form.barber_id : user.id, appointment_date: form.appointment_date, status: form.status, notes: form.notes || null });
         if (error) throw error;
+        const clientName = clients.find(c => c.id === form.client_id)?.name || "";
+        await createNotification(user.id, profile?.full_name || "User", "created", t("appointments"), clientName);
       }
       setDialogOpen(false); setEditingAppointment(null); fetchData();
     } catch (err: any) {

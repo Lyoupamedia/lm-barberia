@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { createNotification } from "@/utils/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +19,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Income = Tables<"income"> & { clients?: { name: string } | null; services?: { name: string } | null };
 
 export default function IncomePage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const { t, formatCurrency, currencySymbol } = useSettings();
   const { toast } = useToast();
   const [incomes, setIncomes] = useState<Income[]>([]);
@@ -81,6 +82,8 @@ export default function IncomePage() {
       } else {
         const { error } = await supabase.from("income").insert({ ...payload, barber_id: user.id });
         if (error) throw error;
+        const svcName = services.find(s => s.id === form.service_id)?.name || form.description;
+        await createNotification(user.id, profile?.full_name || "User", "created", t("income"), svcName);
         toast({ title: t("record_income") });
       }
       setDialogOpen(false);

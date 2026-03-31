@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { createNotification } from "@/utils/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +17,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Client = Tables<"clients">;
 
 export default function ClientsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useSettings();
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
@@ -42,6 +43,7 @@ export default function ClientsPage() {
       } else {
         const { error } = await supabase.from("clients").insert({ name: form.name, phone: form.phone, notes: form.notes, barber_id: user.id });
         if (error) throw error;
+        await createNotification(user.id, profile?.full_name || "User", "created", t("client"), form.name);
       }
       setDialogOpen(false); setEditingClient(null); setForm({ name: "", phone: "", notes: "" }); fetchClients();
     } catch (err: any) {

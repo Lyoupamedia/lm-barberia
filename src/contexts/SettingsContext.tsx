@@ -62,6 +62,9 @@ const translations: Translations = {
     show_section: "Show {section} in navigation",
     export_pdf: "Export PDF", invoice: "Invoice", qty: "Qty", unit_price: "Unit Price",
     thank_you: "Thank you for your business!",
+    notifications: "Notifications", no_notifications: "No notifications yet",
+    notif_created: "created", notif_updated: "updated", notif_deleted: "deleted",
+    you: "You", new: "new", just_now: "just now",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
@@ -120,6 +123,9 @@ const translations: Translations = {
     show_section: "Mostrar {section} en navegación",
     export_pdf: "Exportar PDF", invoice: "Factura", qty: "Cant", unit_price: "Precio Unitario",
     thank_you: "¡Gracias por su preferencia!",
+    notifications: "Notificaciones", no_notifications: "Sin notificaciones",
+    notif_created: "creó", notif_updated: "actualizó", notif_deleted: "eliminó",
+    you: "Tú", new: "nuevas", just_now: "ahora",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
@@ -178,6 +184,9 @@ const translations: Translations = {
     show_section: "Afficher {section} dans la navigation",
     export_pdf: "Exporter PDF", invoice: "Facture", qty: "Qté", unit_price: "Prix Unitaire",
     thank_you: "Merci pour votre confiance !",
+    notifications: "Notifications", no_notifications: "Aucune notification",
+    notif_created: "a créé", notif_updated: "a modifié", notif_deleted: "a supprimé",
+    you: "Vous", new: "nouvelles", just_now: "à l'instant",
   },
 };
 

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { createNotification } from "@/utils/notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,7 @@ type Expense = Tables<"expenses">;
 
 export default function ExpensesPage() {
   const { t, formatCurrency, currencySymbol } = useSettings();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +45,7 @@ export default function ExpensesPage() {
       } else {
         const { error } = await supabase.from("expenses").insert({ description: form.description, amount: parseFloat(form.amount), category: form.category || null, expense_date: form.expense_date });
         if (error) throw error;
+        if (user) await createNotification(user.id, profile?.full_name || "User", "created", t("expenses"), form.description);
       }
       setDialogOpen(false); setEditingExpense(null); fetchExpenses();
     } catch (err: any) {
