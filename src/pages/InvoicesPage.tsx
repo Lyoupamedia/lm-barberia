@@ -19,7 +19,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Invoice = Tables<"invoices"> & { clients?: { name: string } | null };
 
 export default function InvoicesPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const { t, formatCurrency, currencySymbol } = useSettings();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
