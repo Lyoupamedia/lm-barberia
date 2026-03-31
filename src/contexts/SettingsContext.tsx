@@ -60,6 +60,8 @@ const translations: Translations = {
     dont_have_account: "Don't have an account?", salon_description: "The complete salon management platform. Track appointments, clients, income, and team performance all in one place.",
     phone_number: "Phone number", street_city: "Street, City", contact_email: "contact@salon.com",
     show_section: "Show {section} in navigation",
+    export_pdf: "Export PDF", invoice: "Invoice", qty: "Qty", unit_price: "Unit Price",
+    thank_you: "Thank you for your business!",
   },
   es: {
     dashboard: "Panel", clients: "Clientes", appointments: "Citas",
