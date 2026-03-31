@@ -118,6 +118,8 @@ const translations: Translations = {
     dont_have_account: "¿No tienes una cuenta?", salon_description: "La plataforma completa de gestión de salón. Gestiona citas, clientes, ingresos y rendimiento del equipo en un solo lugar.",
     phone_number: "Número de teléfono", street_city: "Calle, Ciudad", contact_email: "contacto@salon.com",
     show_section: "Mostrar {section} en navegación",
+    export_pdf: "Exportar PDF", invoice: "Factura", qty: "Cant", unit_price: "Precio Unitario",
+    thank_you: "¡Gracias por su preferencia!",
   },
   fr: {
     dashboard: "Tableau de bord", clients: "Clients", appointments: "Rendez-vous",
