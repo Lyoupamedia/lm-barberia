@@ -184,6 +184,9 @@ const translations: Translations = {
     show_section: "Afficher {section} dans la navigation",
     export_pdf: "Exporter PDF", invoice: "Facture", qty: "Qté", unit_price: "Prix Unitaire",
     thank_you: "Merci pour votre confiance !",
+    notifications: "Notifications", no_notifications: "Aucune notification",
+    notif_created: "a créé", notif_updated: "a modifié", notif_deleted: "a supprimé",
+    you: "Vous", new: "nouvelles", just_now: "à l'instant",
   },
 };
 
