@@ -62,6 +62,8 @@ export default function AppointmentsPage() {
       } else {
         const { error } = await supabase.from("appointments").insert({ client_id: form.client_id, barber_id: isAdmin ? form.barber_id : user.id, appointment_date: form.appointment_date, status: form.status, notes: form.notes || null });
         if (error) throw error;
+        const clientName = clients.find(c => c.id === form.client_id)?.name || "";
+        await createNotification(user.id, profile?.full_name || "User", "created", t("appointments"), clientName);
       }
       setDialogOpen(false); setEditingAppointment(null); fetchData();
     } catch (err: any) {

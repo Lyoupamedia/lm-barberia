@@ -19,7 +19,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Income = Tables<"income"> & { clients?: { name: string } | null; services?: { name: string } | null };
 
 export default function IncomePage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, profile } = useAuth();
   const { t, formatCurrency, currencySymbol } = useSettings();
   const { toast } = useToast();
   const [incomes, setIncomes] = useState<Income[]>([]);
