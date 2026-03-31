@@ -17,7 +17,7 @@ import type { Tables } from "@/integrations/supabase/types";
 type Client = Tables<"clients">;
 
 export default function ClientsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useSettings();
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
