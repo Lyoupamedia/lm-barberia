@@ -30,14 +30,23 @@ export default function InvoicesPage() {
   const [businessInfo, setBusinessInfo] = useState({ businessName: "LM Barberia", businessPhone: "", businessEmail: "", businessAddress: "" });
 
   const fetchData = async () => {
-    const [invRes, clientRes, serviceRes] = await Promise.all([
+    const [invRes, clientRes, serviceRes, settingsRes] = await Promise.all([
       supabase.from("invoices").select("*, clients(name)").order("created_at", { ascending: false }),
       supabase.from("clients").select("id, name"),
       supabase.from("services").select("id, name, price"),
+      user ? supabase.from("settings").select("business_name, business_phone, business_email, business_address").eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
     setInvoices(invRes.data || []);
     setClients(clientRes.data || []);
     setServices(serviceRes.data || []);
+    if (settingsRes.data) {
+      setBusinessInfo({
+        businessName: settingsRes.data.business_name || "LM Barberia",
+        businessPhone: settingsRes.data.business_phone || "",
+        businessEmail: settingsRes.data.business_email || "",
+        businessAddress: settingsRes.data.business_address || "",
+      });
+    }
     setLoading(false);
   };
 
