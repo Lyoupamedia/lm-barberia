@@ -63,6 +63,8 @@ export default function InvoicesPage() {
       const items = selectedSvcs.map((svc) => ({ invoice_id: invoice.id, service_id: svc.id, description: svc.name, quantity: 1, unit_price: svc.price, total: svc.price }));
       const { error: itemsError } = await supabase.from("invoice_items").insert(items);
       if (itemsError) throw itemsError;
+      const clientName = clients.find(c => c.id === form.client_id)?.name || "";
+      await createNotification(user.id, profile?.full_name || "User", "created", t("invoices"), clientName);
       toast({ title: t("create_invoice") });
       setDialogOpen(false);
       setForm({ client_id: "", selectedServices: [] });
